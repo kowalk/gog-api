@@ -1,0 +1,6 @@
+*/4 * * * * /usr/local/bin/php /usr/share/nginx/html/bin/console exercise:consume --env=prod >> /var/log/cron.log 2>&1
+0 */1 * * * /usr/local/bin/php /usr/share/nginx/html/bin/console issue:consume --env=prod >> /var/log/cron.log 2>&1
+00 12 * * WED /usr/local/bin/php /usr/share/nginx/html/bin/console gradebook:report --env=prod >> /var/log/cron.log 2>&1
+00 17 * * * /usr/local/bin/php /usr/share/nginx/html/bin/console user:send-activation-reminder --env=prod >> /var/log/cron.log 2>&1
+00 17 * * * /usr/local/bin/php /usr/share/nginx/html/bin/console user:send-activation-expiration-reminder 7 --env=prod >> /var/log/cron.log 2>&1
+

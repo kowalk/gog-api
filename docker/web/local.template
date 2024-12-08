@@ -1,0 +1,34 @@
+upstream php-upstream {
+    server phpfpm:9000;
+}
+
+server {
+    root /usr/share/nginx/html;
+    listen 80;
+    server_tokens off;
+    client_max_body_size 10M;
+    tcp_nopush on;
+    tcp_nodelay on;
+
+    location / {
+        try_files $uri @rewriteapp;
+    }
+
+    location @rewriteapp {
+        rewrite ^(.*)$ /index.php/$1 last;
+    }
+
+    location ~ ^/index\.php(/|$) {
+        fastcgi_connect_timeout 300s;
+        fastcgi_send_timeout 300s;
+        fastcgi_read_timeout 300s;
+        fastcgi_buffer_size 3200k;
+        fastcgi_buffers 8 1600k;
+        fastcgi_busy_buffers_size 3200k;
+        fastcgi_pass php-upstream;
+        fastcgi_split_path_info ^(.+\.php)(/.*)$;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root/public/$fastcgi_script_name;
+        fastcgi_param HTTPS off;
+    }
+}
