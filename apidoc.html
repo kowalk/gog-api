@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOG API Documentation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+<h1>GOG API Documentation</h1>
+
+<h2>Overview</h2>
+<p>This API allows you to manage shopping carts and their products. You can create carts, add products to a cart, list products in a cart, and more.</p>
+
+<h2>Endpoints</h2>
+
+<h3>Create Cart</h3>
+<p><strong>URL:</strong> <code>/cart</code></p>
+<p><strong>Method:</strong> POST</p>
+<p><strong>Description:</strong> Creates a new cart.</p>
+<h4>Responses:</h4>
+<pre><code>201 Created
+{
+    "status": "Cart created",
+    "cartId": "string"
+}</code></pre>
+
+<h3>List Products in Cart</h3>
+<p><strong>URL:</strong> <code>/cart/{cartId}/product</code></p>
+<p><strong>Method:</strong> GET</p>
+<p><strong>Description:</strong> Lists all products in the specified cart.</p>
+<h4>Parameters:</h4>
+<ul>
+    <li><code>cartId</code> (string, path) - The ID of the cart.</li>
+</ul>
+<h4>Responses:</h4>
+<pre><code>200 OK
+{
+    "cartId": "string",
+    "products": [
+        {
+            "productId": "string",
+            "quantity": 1
+        }
+    ]
+}</code></pre>
+<pre><code>400 Bad Request
+{
+    "error": "Valid Cart ID is required"
+}</code></pre>
+<pre><code>404 Not Found
+{
+    "error": "Cart not found"
+}</code></pre>
+
+<h3>Add Product to Cart</h3>
+<p><strong>URL:</strong> <code>/cart/{cartId}/product</code></p>
+<p><strong>Method:</strong> POST</p>
+<p><strong>Description:</strong> Adds a product to the specified cart.</p>
+<h4>Parameters:</h4>
+<ul>
+    <li><code>cartId</code> (string, path) - The ID of the cart.</li>
+    <li><code>productId</code> (string, body) - The ID of the product to add.</li>
+    <li><code>quantity</code> (integer, body) - The quantity of the product to add.</li>
+</ul>
+<h4>Request Body:</h4>
+<pre><code>{
+    "productId": "string",
+    "quantity": 1
+}</code></pre>
+<h4>Responses:</h4>
+<pre><code>200 OK
+{
+    "status": "Product added to cart",
+    "cartId": "string",
+    "productId": "string"
+}</code></pre>
+<pre><code>400 Bad Request
+{
+    "error": "Product ID is required"
+}</code></pre>
+<pre><code>400 Bad Request
+{
+    "error": "Valid Product ID is required"
+}</code></pre>
+<pre><code>400 Bad Request
+{
+    "error": "Valid Cart ID is required"
+}</code></pre>
+
+<h3>Add Product</h3>
+<p><strong>URL:</strong> <code>/product/add</code></p>
+<p><strong>Method:</strong> POST</p>
+<p><strong>Description:</strong> Adds a new product.</p>
+<h4>Parameters:</h4>
+<ul>
+    <li><code>name</code> (string, body) - The name of the product.</li>
+    <li><code>price</code> (float, body) - The price of the product.</li>
+    <li><code>currency</code> (string, body) - The currency of the price.</li>
+</ul>
+<h4>Request Body:</h4>
+<pre><code>{
+    "name": "string",
+    "price": 0.0,
+    "currency": "string"
+}</code></pre>
+<h4>Responses:</h4>
+<pre><code>201 Created
+{
+    "status": "Product added successfully",
+    "productId": "string"
+}</code></pre>
+<pre><code>400 Bad Request
+{
+    "error": "Invalid input"
+}</code></pre>
+
+<h3>List Products</h3>
+<p><strong>URL:</strong> <code>/product</code></p>
+<p><strong>Method:</strong> GET</p>
+<p><strong>Description:</strong> Lists all products.</p>
+<h4>Parameters:</h4>
+<ul>
+    <li><code>page</code> (integer, query) - The page number (default: 1).</li>
+    <li><code>limit</code> (integer, query) - The number of products per page (default: 3, max: 3).</li>
+</ul>
+<h4>Responses:</h4>
+<pre><code>200 OK
+[
+    {
+        "id": "string",
+        "name": "string",
+        "price": 0.0,
+        "currency": "string"
+    }
+]</code></pre>
+
+<h3>Update Product</h3>
+<p><strong>URL:</strong> <code>/product/{id}</code></p>
+<p><strong>Method:</strong> PATCH</p>
+<p><strong>Description:</strong> Updates an existing product.</p>
+<h4>Parameters:</h4>
+<ul>
+    <li><code>id</code> (string, path) - The ID of the product.</li>
+    <li><code>name</code> (string, body) - The new name of the product (optional).</li>
+    <li><code>price</code> (float, body) - The new price of the product (optional).</li>
+</ul>
+<h4>Request Body:</h4>
+<pre><code>{
+    "name": "string",
+    "price": 0.0
+}</code></pre>
+<h4>Responses:</h4>
+<pre><code>200 OK
+{
+    "status": "Product updated successfully"
+}</code></pre>
+<pre><code>400 Bad Request
+{
+    "error": "Invalid input"
+}</code></pre>
+
+<h2>Models</h2>
+
+<h3>CartProductDto</h3>
+<h4>Fields:</h4>
+<ul>
+    <li><code>productId</code> (string) - The ID of the product.</li>
+    <li><code>quantity</code> (integer) - The quantity of the product.</li>
+</ul>
+
+<h3>CartDto</h3>
+<h4>Fields:</h4>
+<ul>
+    <li><code>id</code> (string) - The ID of the cart.</li>
+    <li><code>products</code> (array of CartProductDto) - The list of products in the cart.</li>
+</ul>
+
+<h2>Error Handling</h2>
+<p>Errors are returned with appropriate HTTP status codes and a JSON body containing an <code>error</code> field with a descriptive message.</p>
+
+<h2>Example Requests</h2>
+
+<h3>Create Cart</h3>
+<h4>Request:</h4>
+<pre><code>POST /cart HTTP/1.1
+Host: example.com</code></pre>
+<h4>Response:</h4>
+<pre><code>{
+    "status": "Cart created",
+    "cartId": "123e4567-e89b-12d3-a456-426614174000"
+}</code></pre>
+
+<h3>List Products in Cart</h3>
+<h4>Request:</h4>
+<pre><code>GET /cart/123e4567-e89b-12d3-a456-426614174000/product HTTP/1.1
+Host: example.com</code></pre>
+<h4>Response:</h4>
+<pre><code>{
+    "cartId": "123e4567-e89b-12d3-a456-426614174000",
+    "products": [
+        {
+            "productId": "product-id",
+            "quantity": 1
+        }
+    ]
+}</code></pre>
+
+<h3>Add Product to Cart</h3>
+<h4>Request:</h4>
+<pre><code>POST /cart/123e4567-e89b-12d3-a456-426614174000/product HTTP/1.1
+Host: example.com
+Content-Type: application/json
+
+{
+    "productId": "product-id",
+    "quantity": 1
+}</code></pre>
+<h4>Response:</h4>
+<pre><code>{
+    "status": "Product added to cart",
+    "cartId": "123e4567-e89b-12d3-a456-426614174000",
+    "productId": "product-id"
+}</code></pre>
+
+<h3>Add Product</h3>
+<h4>Request:</h4>
+<pre><code>POST /product/add HTTP/1.1
+Host: example.com
+Content-Type: application/json
+
+{
+    "name": "product-name",
+    "price": 10.0,
+    "currency": "USD"
+}</code></pre>
+<h4>Response:</h4>
+<pre><code>{
+    "status": "Product added successfully",
+    "productId": "123e4567-e89b-12d3-a456-426614174000"
+}</code></pre>
+
+<h3>List Products</h3>
+<h4>Request:</h4>
+<pre><code>GET /product?page=1&limit=3 HTTP/1.1
+Host: example.com</code></pre>
+<h4>Response:</h4>
+<pre><code>[
+    {
+        "id": "123e4567-e89b-12d3-a456-426614174000",
+        "name": "product-name",
+        "price": 10.0,
+        "currency": "USD"
+    }
+]</code></pre>
+
+<h3>Update Product</h3>
+<h4>Request:</h4>
+<pre><code>PATCH /product/123e4567-e89b-12d3-a456-426614174000 HTTP/1.1
+Host: example.com
+Content-Type: application/json
+
+{
+    "name": "new-product-name",
+    "price": 15.0
+}</code></pre>
+<h4>Response:</h4>
+<pre><code>{
+    "status": "Product updated successfully"
+}</code></pre>
+</body>
+</html>
