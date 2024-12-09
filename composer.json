@@ -12,14 +12,18 @@
         "doctrine/doctrine-migrations-bundle": "^3.3",
         "doctrine/orm": "^3.3",
         "nelmio/api-doc-bundle": "^4.33",
+        "symfony/asset": "7.2.*",
         "symfony/console": "7.2.*",
         "symfony/dotenv": "7.2.*",
         "symfony/flex": "^2",
         "symfony/framework-bundle": "7.2.*",
         "symfony/messenger": "7.2.*",
         "symfony/runtime": "7.2.*",
+        "symfony/twig-bundle": "7.2.*",
         "symfony/uid": "7.2.*",
         "symfony/yaml": "7.2.*",
+        "twig/extra-bundle": "^2.12|^3.0",
+        "twig/twig": "^2.12|^3.0",
         "webmozart/assert": "^1.11"
     },
     "config": {

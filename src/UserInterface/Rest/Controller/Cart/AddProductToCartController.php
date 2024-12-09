@@ -24,6 +24,7 @@ final class AddProductToCartController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
         $productId = $data['productId'] ?? null;
+        $quantity = $data['quantity'] ?? null;
 
         if (!$productId) {
             return new JsonResponse(['error' => 'Product ID is required'], JsonResponse::HTTP_BAD_REQUEST);
@@ -37,14 +38,13 @@ final class AddProductToCartController extends AbstractController
             return new JsonResponse(['error' => 'Valid Cart ID is required'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
-        $command = new AddProductToCartCommand($cartId, $productId);
+        $command = new AddProductToCartCommand($cartId, $productId, $quantity);
 
         try {
             $this->validator->validate($command);
         } catch (\InvalidArgumentException $e) {
             return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_BAD_REQUEST);
         }
-
 
         $this->commandBus->dispatch($command);
 

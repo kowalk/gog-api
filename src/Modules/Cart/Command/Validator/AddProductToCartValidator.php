@@ -36,5 +36,13 @@ final class AddProductToCartValidator implements IValidator
         if (!$product) {
             throw new InvalidArgumentException("Product with ID " . $command->getProductId() . " not found.");
         }
+
+        //maximum quantity of same product in cart is 10
+        $currentProductQuantity = $cart->getProducts()->getProduct($command->getProductId())?->getQuantity() ?? 0;
+        $newQuantity = $currentProductQuantity + intval($command->getQuantity() ?? 1);
+
+        if ($newQuantity > 10) {
+            throw new InvalidArgumentException("Maximum quantity of product with ID " . $command->getProductId() . " already in cart.");
+        }
     }
 }

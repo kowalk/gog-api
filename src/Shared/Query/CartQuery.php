@@ -3,6 +3,8 @@
 namespace App\Shared\Query;
 
 use App\Modules\Cart\Dto\CartDto;
+use App\Modules\Cart\Dto\CartProductDto;
+use App\Modules\Cart\Dto\CartProductDtoCollection;
 use App\Modules\Cart\Query\ICartQuery;
 use App\Modules\Common\Dto\IDtoCollection;
 use App\Modules\Common\Dto\IProductDto;
@@ -81,13 +83,19 @@ final readonly class CartQuery implements ICartQuery, IDoctrineQuery
             throw new \RuntimeException('Invalid entity');
         }
 
-        $productIds = array_map(fn($product) => $product->getId(), $entity->getProducts()->toArray());
-        $products = $this->productRepository->findAllByIds($productIds);
-        $productDtos = array_map(fn($product) => $this->productQuery->convertEntityToDto($product), $products);
+        $cartProducts = $entity->getCartProducts()->toArray();
+        $cartProductDtos = [];
+        foreach($cartProducts as $cartProduct) {
+            $cartProductDtos[] = new CartProductDto(
+                $cartProduct->getProduct()->getId()->toString(),
+                $cartProduct->getQuantity()
+            );
+        }
+
 
         return new CartDto(
             $entity->getId()->toString(),
-            new DtoCollection($productDtos, [IProductDto::class]
-        ));
+            new CartProductDtoCollection($cartProductDtos)
+        );
     }
 }

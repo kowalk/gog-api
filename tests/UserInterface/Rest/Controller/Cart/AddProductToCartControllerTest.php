@@ -22,7 +22,7 @@ final class AddProductToCartControllerTest extends WebTestCase
 
         // Clear the cart and product tables
         $connection = $this->entityManager->getConnection();
-        $connection->executeStatement('DELETE FROM cart_products');
+        $connection->executeStatement('DELETE FROM cart_product');
         $connection->executeStatement('DELETE FROM product');
         $connection->executeStatement('DELETE FROM cart');
     }
@@ -45,22 +45,114 @@ final class AddProductToCartControllerTest extends WebTestCase
         $this->entityManager->persist($product);
         $this->entityManager->flush();
 
-        $this->client->request('POST', '/cart/' . $cart->getId() . '/product', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(['productId' => $product->getId()]));
+        $this->client->request('POST', '/api/cart/' . $cart->getId() . '/product', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(['productId' => $product->getId()]));
 
         $response = $this->client->getResponse();
         $this->assertEquals(Response::HTTP_OK, $response->getStatusCode());
         $this->assertStringContainsString('Product added to cart', $response->getContent());
 
         // Verify the product was added to the cart
-        $updatedCart = $this->entityManager->getRepository(Cart::class)->find($cart->getId());
-        $this->assertTrue($updatedCart->getProducts()->contains($product));
+        $cart = $this->entityManager->getRepository(Cart::class)->find($cart->getId());
+        $this->assertCount(1, $cart->getCartProducts());
+
+        //verify product quantity
+        $cartProduct = $cart->getCartProducts()->first();
+        $this->assertEquals(1, $cartProduct->getQuantity());
+        $this->assertEquals($product->getId(), $cartProduct->getProduct()->getId());
     }
+
+    public function testAddMultipleTimesSameProductsToCart()
+    {
+        $cart = $this->createCart();
+
+        $currency = $this->entityManager->getRepository(Currency::class)->findOneBy(['code' => 'USD']);
+        $product = new Product(Uuid::v4(), 'Test Product', 100.0, $currency);
+        $this->entityManager->persist($product);
+        $this->entityManager->flush();
+
+        // Add the same product twice
+        $this->client->request('POST', '/api/cart/' . $cart->getId() . '/product', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(['productId' => $product->getId()]));
+        $this->client->request('POST', '/api/cart/' . $cart->getId() . '/product', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(['productId' => $product->getId()]));
+
+        $response = $this->client->getResponse();
+        $this->assertEquals(Response::HTTP_OK, $response->getStatusCode());
+        $this->assertStringContainsString('Product added to cart', $response->getContent());
+
+        // Verify the product was added to the cart twice
+        $cart = $this->entityManager->getRepository(Cart::class)->find($cart->getId());
+        $this->assertCount(1, $cart->getCartProducts());
+
+        // Verify product quantity
+        $cartProduct = $cart->getCartProducts()->first();
+        $this->assertEquals(2, $cartProduct->getQuantity());
+        $this->assertEquals($product->getId(), $cartProduct->getProduct()->getId());
+    }
+
+    public function testMaximumProductQuantityInCart()
+    {
+        $cart = $this->createCart();
+
+        $currency = $this->entityManager->getRepository(Currency::class)->findOneBy(['code' => 'USD']);
+        $product = new Product(Uuid::v4(), 'Test Product', 100.0, $currency);
+        $this->entityManager->persist($product);
+        $this->entityManager->flush();
+        $maxQuantity = 10; // Define the maximum quantity allowed
+
+        //add maximum quantity of product to cart
+        $this->client->request('POST', '/api/cart/' . $cart->getId() . '/product', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(['productId' => $product->getId(), 'quantity' => $maxQuantity]));
+
+        $response = $this->client->getResponse();
+        $this->assertEquals(Response::HTTP_OK, $response->getStatusCode());
+        $this->assertStringContainsString('Product added to cart', $response->getContent());
+
+        // Verify the product quantity does not exceed the maximum limit
+        $cart = $this->entityManager->getRepository(Cart::class)->find($cart->getId());
+        $this->assertCount(1, $cart->getCartProducts());
+
+        $cartProduct = $cart->getCartProducts()->first();
+        $this->assertEquals($maxQuantity, $cartProduct->getQuantity());
+        $this->assertEquals($product->getId(), $cartProduct->getProduct()->getId());
+
+        //add one more product to cart
+        $this->client->request('POST', '/api/cart/' . $cart->getId() . '/product', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(['productId' => $product->getId()]));
+        $response = $this->client->getResponse();
+
+        // Verify the product quantity does not exceed the maximum limit
+        $cart = $this->entityManager->getRepository(Cart::class)->find($cart->getId());
+        $this->assertCount(1, $cart->getCartProducts());
+
+        $cartProduct = $cart->getCartProducts()->first();
+        $this->assertEquals($maxQuantity, $cartProduct->getQuantity());
+        $this->assertEquals($product->getId(), $cartProduct->getProduct()->getId());
+
+        $this->assertEquals(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+        $this->assertJsonStringEqualsJsonString(json_encode(['error' => 'Maximum quantity of product with ID '. $product->getId() .' already in cart.']), $response->getContent());
+    }
+
+    public function testAddProductWithExceededQuantity()
+    {
+        $cart = $this->createCart();
+
+        $currency = $this->entityManager->getRepository(Currency::class)->findOneBy(['code' => 'USD']);
+        $product = new Product(Uuid::v4(), 'Test Product', 100.0, $currency);
+        $this->entityManager->persist($product);
+        $this->entityManager->flush();
+
+        $quantity = 1000;
+
+        $this->client->request('POST', '/api/cart/' . $cart->getId() . '/product', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(['productId' => $product->getId(), 'quantity' => $quantity]));
+
+        $response = $this->client->getResponse();
+        $this->assertEquals(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+        $this->assertJsonStringEqualsJsonString(json_encode(['error' => 'Maximum quantity of product with ID '. $product->getId() .' already in cart.']), $response->getContent());
+    }
+
 
     public function testProductIdIsRequired()
     {
         $cart = $this->createCart();
 
-        $this->client->request('POST', '/cart/' . $cart->getId() . '/product', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([]));
+        $this->client->request('POST', '/api/cart/' . $cart->getId() . '/product', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([]));
 
         $response = $this->client->getResponse();
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
@@ -69,7 +161,7 @@ final class AddProductToCartControllerTest extends WebTestCase
 
     public function testCartWithInvalidIdFormatNotFound()
     {
-        $this->client->request('POST', '/cart/invalid-cart-id/product', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(['productId' => '123']));
+        $this->client->request('POST', '/api/cart/invalid-cart-id/product', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(['productId' => '123']));
 
         $response = $this->client->getResponse();
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
@@ -79,7 +171,7 @@ final class AddProductToCartControllerTest extends WebTestCase
     public function testCartNotFound()
     {
         $cartId = Uuid::v4()->toString();
-        $this->client->request('POST', '/cart/'. $cartId .'/product', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(['productId' => Uuid::v4()->toString()]));
+        $this->client->request('POST', '/api/cart/'. $cartId .'/product', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(['productId' => Uuid::v4()->toString()]));
 
         $response = $this->client->getResponse();
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
@@ -90,7 +182,7 @@ final class AddProductToCartControllerTest extends WebTestCase
     {
         $cart = $this->createCart();
 
-        $this->client->request('POST', '/cart/' . $cart->getId() . '/product', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(['productId' => 'invalid-product-id']));
+        $this->client->request('POST', '/api/cart/' . $cart->getId() . '/product', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(['productId' => 'invalid-product-id']));
 
         $response = $this->client->getResponse();
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
@@ -102,7 +194,7 @@ final class AddProductToCartControllerTest extends WebTestCase
         $cart = $this->createCart();
         $productId = Uuid::v4()->toString();
 
-        $this->client->request('POST', '/cart/' . $cart->getId() . '/product', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(['productId' => $productId]));
+        $this->client->request('POST', '/api/cart/' . $cart->getId() . '/product', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(['productId' => $productId]));
 
         $response = $this->client->getResponse();
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $response->getStatusCode());

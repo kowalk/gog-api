@@ -2,15 +2,13 @@
 
 namespace App\Modules\Cart\Command;
 
-final class AddProductToCartCommand
+final readonly class AddProductToCartCommand
 {
-    private string $cartId;
-    private string $productId;
-
-    public function __construct(string $cartId, string $productId)
-    {
-        $this->cartId = $cartId;
-        $this->productId = $productId;
+    public function __construct(
+        private string $cartId,
+        private string $productId,
+        private ?int   $quantity = null
+    ) {
     }
 
     public function getCartId(): string
@@ -21,5 +19,10 @@ final class AddProductToCartCommand
     public function getProductId(): string
     {
         return $this->productId;
+    }
+
+    public function getQuantity(): ?int
+    {
+        return $this->quantity;
     }
 }

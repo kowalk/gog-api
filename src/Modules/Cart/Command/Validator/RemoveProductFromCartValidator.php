@@ -3,6 +3,7 @@
 namespace App\Modules\Cart\Command\Validator;
 
 use App\Modules\Cart\Command\RemoveProductFromCartCommand;
+use App\Modules\Cart\Query\ICartQuery;
 
 final class RemoveProductFromCartValidator
 {

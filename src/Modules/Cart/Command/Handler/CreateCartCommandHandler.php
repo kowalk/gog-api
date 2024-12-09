@@ -27,8 +27,7 @@ final class CreateCartCommandHandler
         $this->validator->validate($command);
         $this->cartService->save(
             new CartDto(
-                $command->getCartId(),
-                new DtoCollection([],[IProductDto::class])
+                $command->getCartId()
             )
         );
     }

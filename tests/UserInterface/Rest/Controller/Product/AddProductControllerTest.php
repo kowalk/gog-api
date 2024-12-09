@@ -24,7 +24,7 @@ final class AddProductControllerTest extends WebTestCase
 
     public function testAddProductValidationFails()
     {
-        $this->client->request('POST', '/product/add', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+        $this->client->request('POST', '/api/product/add', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
             'name' => 'Test Product',
             'price' => 100,
             'currency' => 'INVALID_CURRENCY'
@@ -36,7 +36,7 @@ final class AddProductControllerTest extends WebTestCase
 
     public function testAddProductValidationSucceeds()
     {
-        $this->client->request('POST', '/product/add', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+        $this->client->request('POST', '/api/product/add', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
             'name' => 'Test Product',
             'price' => 100,
             'currency' => 'USD'
@@ -59,7 +59,7 @@ final class AddProductControllerTest extends WebTestCase
 
     public function testAddProductWithExistingName()
     {
-        $this->client->request('POST', '/product/add', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+        $this->client->request('POST', '/api/product/add', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
             'name' => 'Test Product',
             'price' => 100,
             'currency' => 'USD'
@@ -67,7 +67,7 @@ final class AddProductControllerTest extends WebTestCase
 
         $this->assertEquals(Response::HTTP_CREATED, $this->client->getResponse()->getStatusCode());
 
-        $this->client->request('POST', '/product/add', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+        $this->client->request('POST', '/api/product/add', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
             'name' => 'Test Product',
             'price' => 100,
             'currency' => 'USD'

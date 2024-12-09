@@ -17,15 +17,14 @@ class Cart implements IEntity
     #[ORM\Column(type: 'boolean')]
     private bool $isGuest;
 
-    #[ORM\ManyToMany(targetEntity: "App\Shared\Doctrine\Entity\Product")]
-    #[ORM\JoinTable(name: "cart_products")]
-    private Collection $products;
+    #[ORM\OneToMany(targetEntity: "App\Shared\Doctrine\Entity\CartProduct", mappedBy: "cart", cascade: ["persist", "remove"])]
+    private Collection $cartProducts;
 
     public function __construct(Uuid $id, bool $isGuest = true)
     {
         $this->id = $id;
         $this->isGuest = $isGuest;
-        $this->products = new ArrayCollection();
+        $this->cartProducts = new ArrayCollection();
     }
 
     public function getId(): Uuid
@@ -44,22 +43,39 @@ class Cart implements IEntity
         return $this;
     }
 
-    public function getProducts(): Collection
+    public function getCartProducts(): Collection
     {
-        return $this->products;
+        return $this->cartProducts;
     }
 
-    public function addProduct(Product $product): self
+    public function addProduct(Product $product, int $quantity = 1): self
     {
-        if (!$this->products->contains($product)) {
-            $this->products[] = $product;
+        foreach ($this->cartProducts as $cartProduct) {
+            if ($cartProduct->getProduct() === $product) {
+                $cartProduct->setQuantity($quantity);
+                return $this;
+            }
         }
+
+        $cartProduct = new CartProduct($this, $product, $quantity);
+        $this->cartProducts[] = $cartProduct;
         return $this;
     }
 
     public function removeProduct(Product $product): self
     {
-        $this->products->removeElement($product);
+        foreach ($this->cartProducts as $cartProduct) {
+            if ($cartProduct->getProduct() === $product) {
+                $this->cartProducts->removeElement($cartProduct);
+                return $this;
+            }
+        }
+        return $this;
+    }
+
+    public function setCartProducts(ArrayCollection $cartProducts): self
+    {
+        $this->cartProducts = $cartProducts;
         return $this;
     }
 }

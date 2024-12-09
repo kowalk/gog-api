@@ -7,6 +7,7 @@ use App\Shared\Doctrine\Entity\IEntity;
 use App\Shared\Doctrine\Entity\Product;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
+use Symfony\Bridge\Doctrine\Types\UuidType;
 
 final class ProductRepository extends EntityRepository
 {
@@ -23,9 +24,15 @@ final class ProductRepository extends EntityRepository
 
     public function findAllByIds(array $ids): array
     {
-        $products = $this->findBy(['id' => $ids]);
+        //convert ids to binary
+        $ids = array_map(
+            fn($id) => $this->getEntityManager()
+                ->getConnection()
+                ->convertToDatabaseValue($id, UuidType::NAME),
+            $ids
+        );
 
-        return $products;
+        return $this->findBy(['id' => $ids]);
     }
 
     public function getById(string $id): Product

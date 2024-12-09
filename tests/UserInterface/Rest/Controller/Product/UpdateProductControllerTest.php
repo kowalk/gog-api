@@ -40,7 +40,7 @@ final class UpdateProductControllerTest extends WebTestCase
     public function testValidateValidCommand()
     {
         $product = $this->entityManager->getRepository(Product::class)->findOneBy(['name' => 'Example Product']);
-        $this->client->request('PATCH', '/product/' . $product->getId(), [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+        $this->client->request('PATCH', '/api/product/' . $product->getId(), [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
             'name' => 'Updated Product',
             'price' => 150
         ]));
@@ -57,7 +57,7 @@ final class UpdateProductControllerTest extends WebTestCase
     public function testUpdateNonExistingProduct()
     {
         $nonExistingProductId = Uuid::v4();
-        $this->client->request('PATCH', '/product/' . $nonExistingProductId, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+        $this->client->request('PATCH', '/api/product/' . $nonExistingProductId, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
             'name' => 'Non Existing Product',
             'price' => 200
         ]));
@@ -69,7 +69,7 @@ final class UpdateProductControllerTest extends WebTestCase
     public function testInvalidCommandThrowsException()
     {
         $product = $this->entityManager->getRepository(Product::class)->findOneBy(['name' => 'Example Product']);
-        $this->client->request('PATCH', '/product/' . $product->getId(), [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+        $this->client->request('PATCH', '/api/product/' . $product->getId(), [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
             'name' => 'Updated Product',
             'price' => -150
         ]));
@@ -81,7 +81,7 @@ final class UpdateProductControllerTest extends WebTestCase
     public function testNoDataToUpdate()
     {
         $product = $this->entityManager->getRepository(Product::class)->findOneBy(['name' => 'Example Product']);
-        $this->client->request('PATCH', '/product/' . $product->getId(), [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([]));
+        $this->client->request('PATCH', '/api/product/' . $product->getId(), [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([]));
 
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $this->client->getResponse()->getStatusCode());
         $this->assertJsonStringEqualsJsonString(json_encode(['error' => 'At least one of name or price must be provided']), $this->client->getResponse()->getContent());

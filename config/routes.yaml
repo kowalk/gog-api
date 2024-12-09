@@ -2,4 +2,5 @@ controllers:
     resource:
         path: ../src/UserInterface/Rest/Controller/
         namespace: App\UserInterface\Rest\Controller
+    prefix: /api
     type: attribute

@@ -20,13 +20,13 @@ final class CreateCartControllerTest extends WebTestCase
 
         // Clear the cart table
         $connection = $this->entityManager->getConnection();
-        $connection->executeStatement('DELETE FROM cart_products');
+        $connection->executeStatement('DELETE FROM cart_product');
         $connection->executeStatement('DELETE FROM cart');
     }
 
     public function testCreateCartSuccessfully(): void
     {
-        $this->client->request('POST', '/cart', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([]));
+        $this->client->request('POST', '/api/cart', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([]));
 
         $response = $this->client->getResponse();
 

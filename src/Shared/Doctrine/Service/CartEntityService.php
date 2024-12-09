@@ -3,10 +3,12 @@
 namespace App\Shared\Doctrine\Service;
 
 use App\Modules\Cart\Dto\CartDto;
+use App\Modules\Cart\Dto\CartProductDto;
 use App\Modules\Cart\Query\ICartQuery;
 use App\Modules\Cart\Service\ICartService;
 use App\Modules\Common\Dto\IDto;
 use App\Shared\Doctrine\Entity\Cart;
+use App\Shared\Doctrine\Entity\CartProduct;
 use App\Shared\Doctrine\Entity\IEntity;
 use App\Shared\Doctrine\Repository\CartRepository;
 use App\Shared\Doctrine\Repository\ProductRepository;
@@ -14,27 +16,36 @@ use Symfony\Component\Uid\Uuid;
 
 final class CartEntityService extends EntityService implements ICartService
 {
-    private ICartQuery $cartQuery;
 
     public function __construct(
-        ICartQuery $cartQuery,
-        private CartRepository $cartRepository,
-        private ProductRepository $productRepository
+        private readonly ICartQuery            $cartQuery,
+        private readonly CartRepository        $cartRepository,
+        private readonly ProductRepository     $productRepository,
     ) {
-        $this->cartQuery = $cartQuery;
     }
 
     public function convertToEntity(IDto|CartDto $dto): IEntity
     {
         $cart = $this->cartRepository->find($dto->getId());
-        if(!$cart instanceof Cart) {
+        if (!$cart instanceof Cart) {
             $cart = new Cart(Uuid::fromString($dto->getId()));
         }
 
-        foreach ($dto->getProducts() as $productDto) {
-            $product = $this->productRepository->find($productDto->getId());
-            if ($product) {
-                $cart->addProduct($product);
+        $productsCollection = $dto->getProducts();
+        $cartProducts = $cart->getCartProducts();
+
+        //replace quantity in cart products if cart product not exists add new cart product to cartProducts
+        /** @var CartProductDto $product */
+        foreach ($productsCollection->toArray() as $product) {
+            $cartProduct = $cartProducts->filter(function (CartProduct $cartProduct) use ($product) {
+                return $cartProduct->getProduct()->getId()->toString() === $product->getProductId();
+            })->first();
+
+            if ($cartProduct) {
+                $cartProduct->setQuantity($product->getQuantity());
+            } else {
+                $productEntity = $this->productRepository->find($product->getProductId());
+                $cart->addProduct($productEntity, $product->getQuantity());
             }
         }
 

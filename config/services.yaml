@@ -19,6 +19,12 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+            - '../src/Shared/Doctrine/Migration'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    Nelmio\ApiDocBundle\Controller\SwaggerUiController:
+        arguments:
+            $renderOpenApi: '@nelmio_api_doc.render_open_api'
+            $uiRenderer: '%nelmio_api_doc.ui_renderer%'
