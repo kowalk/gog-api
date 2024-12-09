@@ -23,11 +23,7 @@ final readonly class UpdateProductHandler
     {
         $this->validator->validate($command);
 
-        $product = $this->productQuery->findOneById($command->getId());
-
-        if ($product === null) {
-            throw new \InvalidArgumentException('Product not found');
-        }
+        $product = $this->productQuery->getProductById($command->getId());
 
         if ($command->getName() !== null) {
             $product->setName($command->getName());

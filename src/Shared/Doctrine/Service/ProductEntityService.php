@@ -3,21 +3,20 @@
 namespace App\Shared\Doctrine\Service;
 
 use App\Modules\Common\Dto\IDto;
-use App\Modules\Product\Service\IProductService;
 use App\Modules\Product\Dto\ProductDto;
+use App\Modules\Product\Service\IProductService;
 use App\Shared\Assert;
-use App\Shared\Doctrine\Entity\Currency;
 use App\Shared\Doctrine\Entity\IEntity;
 use App\Shared\Doctrine\Entity\Product;
-use App\Shared\Doctrine\Repository\CurrencyEntityRepository;
-use App\Shared\Doctrine\Repository\ProductEntityRepository;
+use App\Shared\Doctrine\Repository\CurrencyRepository;
+use App\Shared\Doctrine\Repository\ProductRepository;
 use Symfony\Component\Uid\Uuid;
 
 final class ProductEntityService extends EntityService implements IProductService
 {
     public function __construct(
-        private readonly ProductEntityRepository  $productEntityRepository,
-        private readonly CurrencyEntityRepository $currencyEntityRepository)
+        private readonly ProductRepository  $productEntityRepository,
+        private readonly CurrencyRepository $currencyEntityRepository)
     {
     }
 

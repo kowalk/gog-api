@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Shared\Doctrine\Entity\Product;
 
-class AddProductControllerTest extends WebTestCase
+final class AddProductControllerTest extends WebTestCase
 {
     private EntityManagerInterface $entityManager;
     private $client;
@@ -43,13 +43,38 @@ class AddProductControllerTest extends WebTestCase
         ]));
 
         $this->assertEquals(Response::HTTP_CREATED, $this->client->getResponse()->getStatusCode());
-        $this->assertJsonStringEqualsJsonString(json_encode(['status' => 'Product added successfully']), $this->client->getResponse()->getContent());
+        $responseJson = json_decode($this->client->getResponse()->getContent(), true);
+
+        $this->assertArrayHasKey('status', $responseJson);
+        $this->assertArrayHasKey('productId', $responseJson);
+        $this->assertEquals('Product added successfully', $responseJson['status']);
 
         // Check if the product was added to the database
-        $product = $this->entityManager->getRepository(Product::class)->findOneBy(['name' => 'Test Product']);
+        $responseJson = json_decode($this->client->getResponse()->getContent(), true);
+        $product = $this->entityManager->getRepository(Product::class)->findOneBy(['name' => 'Test Product', 'id' => $responseJson['productId']]);
         $this->assertNotNull($product);
         $this->assertEquals(100, $product->getPrice());
         $this->assertEquals('USD', $product->getCurrency()->getCode());
+    }
+
+    public function testAddProductWithExistingName()
+    {
+        $this->client->request('POST', '/product/add', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+            'name' => 'Test Product',
+            'price' => 100,
+            'currency' => 'USD'
+        ]));
+
+        $this->assertEquals(Response::HTTP_CREATED, $this->client->getResponse()->getStatusCode());
+
+        $this->client->request('POST', '/product/add', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+            'name' => 'Test Product',
+            'price' => 100,
+            'currency' => 'USD'
+        ]));
+
+        $this->assertEquals(Response::HTTP_BAD_REQUEST, $this->client->getResponse()->getStatusCode());
+        $this->assertJsonStringEqualsJsonString(json_encode(['error' => 'Product with this name already exists']), $this->client->getResponse()->getContent());
     }
 
     protected function tearDown(): void

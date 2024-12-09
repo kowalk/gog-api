@@ -2,9 +2,10 @@
 
 namespace App\Shared;
 
-use Shared\Exception\InvalidArgumentException;
+use App\Modules\Common\IAssert;
+use App\Shared\Exception\InvalidArgumentException;
 
-final class Assert extends \Webmozart\Assert\Assert
+final class Assert extends \Webmozart\Assert\Assert implements IAssert
 {
     /**
      * @param string $message

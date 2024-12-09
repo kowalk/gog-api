@@ -3,9 +3,10 @@
 namespace App\Modules\Product\Dto;
 
 use App\Modules\Common\Dto\IDto;
+use App\Modules\Common\Dto\IProductDto;
 use App\Shared\Assert;
 
-final class ProductDto implements IDto
+final class ProductDto implements IProductDto
 {
     private string $id;
     private string $name;
@@ -17,6 +18,7 @@ final class ProductDto implements IDto
         Assert::uuid($id);
         Assert::notEmpty($name);
         Assert::maxLength($name, 255);
+        Assert::greaterThan($price, 0);
 
         $this->id = $id;
         $this->name = $name;
@@ -52,5 +54,10 @@ final class ProductDto implements IDto
     public function setName(string $name): void
     {
         $this->name = $name;
+    }
+
+    public function setCurrencyCode(string $currencyCode): void
+    {
+        $this->currencyCode = $currencyCode;
     }
 }

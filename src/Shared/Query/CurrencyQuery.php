@@ -1,18 +1,17 @@
 <?php
 
-namespace App\Shared\Doctrine\Repository;
+namespace App\Shared\Query;
 
 use App\Modules\Common\Dto\CurrencyDto;
 use App\Modules\Common\Query\ICurrencyQuery;
 use App\Shared\Doctrine\Entity\Currency;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Mapping\ClassMetadata;
+use App\Shared\Doctrine\Entity\IEntity;
+use App\Shared\Doctrine\Repository\CurrencyRepository;
 
-final class CurrencyEntityRepository extends EntityRepository implements ICurrencyQuery
+final class CurrencyQuery implements ICurrencyQuery, IDoctrineQuery
 {
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(private readonly CurrencyRepository $currencyRepository)
     {
-        parent::__construct($em, new ClassMetadata(Currency::class));
     }
 
     public function getByCode(string $code): CurrencyDto
@@ -28,7 +27,7 @@ final class CurrencyEntityRepository extends EntityRepository implements ICurren
 
     public function findByCode(string $code): ?CurrencyDto
     {
-        $currency = $this->findOneBy(['code' => $code]);
+        $currency = $this->currencyRepository->findOneBy(['code' => $code]);
 
         if($currency === null) {
             return null;
@@ -38,8 +37,12 @@ final class CurrencyEntityRepository extends EntityRepository implements ICurren
     }
 
 
-    public function convertEntityToDto(Currency $entity): CurrencyDto
+    public function convertEntityToDto(IEntity|Currency $entity): CurrencyDto
     {
+        if(!$entity instanceof Currency) {
+            throw new \RuntimeException('Invalid entity');
+        }
+
         return new CurrencyDto(
             $entity->getCode(),
             $entity->getName()

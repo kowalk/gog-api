@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Modules\Product\Command\Validator;
+namespace App\Modules\Common\Command\Validator;
 
 use App\Modules\Common\Command\ICommand;
-use App\Shared\Repository\ProductRepository;
 
 interface IValidator
 {

@@ -10,8 +10,6 @@ class Product implements IEntity
 {
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
-    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
-    #[ORM\CustomIdGenerator(class: 'Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator')]
     private Uuid $id;
 
     #[ORM\Column(type: 'string', length: 255, unique: true)]

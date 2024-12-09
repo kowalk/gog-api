@@ -7,13 +7,11 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity(repositoryClass: "App\Repository\CartRepository")]
+#[ORM\Entity]
 class Cart implements IEntity
 {
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
-    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
-    #[ORM\CustomIdGenerator(class: 'Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator')]
     private Uuid $id;
 
     #[ORM\Column(type: 'boolean')]
@@ -23,8 +21,10 @@ class Cart implements IEntity
     #[ORM\JoinTable(name: "cart_products")]
     private Collection $products;
 
-    public function __construct()
+    public function __construct(Uuid $id, bool $isGuest = true)
     {
+        $this->id = $id;
+        $this->isGuest = $isGuest;
         $this->products = new ArrayCollection();
     }
 

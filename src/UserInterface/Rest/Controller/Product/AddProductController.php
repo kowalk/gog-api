@@ -25,9 +25,10 @@ final class AddProductController extends AbstractController
     public function addProduct(Request $request): Response
     {
         $data = json_decode($request->getContent(), true);
+        $productId = Uuid::v4()->toString();
 
         $command = new AddProductCommand(
-            Uuid::v4()->toString(),
+            $productId,
             $data['name'],
             $data['price'],
             $data['currency']
@@ -41,6 +42,6 @@ final class AddProductController extends AbstractController
 
         $this->commandBus->dispatch($command);
 
-        return new JsonResponse(['status' => 'Product added successfully'], Response::HTTP_CREATED);
+        return new JsonResponse(['status' => 'Product added successfully', 'productId' => $productId], Response::HTTP_CREATED);
     }
 }

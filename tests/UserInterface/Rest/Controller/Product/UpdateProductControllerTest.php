@@ -9,7 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Shared\Doctrine\Entity\Product;
 use Symfony\Component\Uid\Uuid;
 
-class UpdateProductControllerTest extends WebTestCase
+final class UpdateProductControllerTest extends WebTestCase
 {
     private EntityManagerInterface $entityManager;
     private $client;
@@ -52,6 +52,18 @@ class UpdateProductControllerTest extends WebTestCase
         $updatedProduct = $this->entityManager->getRepository(Product::class)->find($product->getId());
         $this->assertEquals('Updated Product', $updatedProduct->getName());
         $this->assertEquals(150, $updatedProduct->getPrice());
+    }
+
+    public function testUpdateNonExistingProduct()
+    {
+        $nonExistingProductId = Uuid::v4();
+        $this->client->request('PATCH', '/product/' . $nonExistingProductId, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+            'name' => 'Non Existing Product',
+            'price' => 200
+        ]));
+
+        $this->assertEquals(Response::HTTP_BAD_REQUEST, $this->client->getResponse()->getStatusCode());
+        $this->assertJsonStringEqualsJsonString(json_encode(['error' => 'Product not found']), $this->client->getResponse()->getContent());
     }
 
     public function testInvalidCommandThrowsException()

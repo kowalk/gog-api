@@ -2,10 +2,13 @@
 
 namespace App\Modules\Product\Command\Validator;
 
+use App\Modules\Common\Command\ICommand;
+use App\Modules\Common\Command\Validator\IValidator;
 use App\Modules\Product\Command\UpdateProductCommand;
 use App\Modules\Product\Query\IProductQuery;
+use App\Shared\Assert;
 
-final class UpdateProductValidator
+final class UpdateProductValidator implements IValidator
 {
     private IProductQuery $query;
 
@@ -14,9 +17,11 @@ final class UpdateProductValidator
         $this->query = $query;
     }
 
-    public function validate(UpdateProductCommand $command): void
+    public function validate(UpdateProductCommand|ICommand $command): void
     {
-        $product = $this->query->findOneById($command->getId());
+        Assert::isInstanceOf($command, UpdateProductCommand::class);
+
+        $product = $this->query->findProductById($command->getId());
 
         if ($product === null) {
             throw new \InvalidArgumentException('Product not found');

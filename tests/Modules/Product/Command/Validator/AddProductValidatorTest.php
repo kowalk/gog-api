@@ -28,7 +28,7 @@ class AddProductValidatorTest extends TestCase
     {
         $command = new AddProductCommand(Uuid::v4()->toString(),'Test Product', (float) 100, 'USD');
 
-        $this->productRepository->method('findOneByName')->willReturn(null);
+        $this->productRepository->method('findProductByName')->willReturn(null);
         $this->currencyRepository->method('findByCode')->willReturn(new CurrencyDto('USD', 'United States Dollar'));
 
         $this->validator->validate($command);
@@ -40,7 +40,7 @@ class AddProductValidatorTest extends TestCase
     {
         $command = new AddProductCommand(Uuid::v4()->toString(), 'Test Product', (float) 100, 'USD');
 
-        $this->productRepository->method('findOneByName')->willReturn(new ProductDto(Uuid::v4()->toString(), 'Test Product', (float) 100, 'USD'));
+        $this->productRepository->method('findProductByName')->willReturn(new ProductDto(Uuid::v4()->toString(), 'Test Product', (float) 100, 'USD'));
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Product with this name already exists');
